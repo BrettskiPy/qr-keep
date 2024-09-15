@@ -11,13 +11,17 @@ from schemas.metadata import MetadataCreate
 
 
 def create_qrcode(db: Session, qr_data: QRCodeCreate):
-    qr_id = str(uuid.uuid4())
-    # Append qr_id as a query parameter to the original data (URL)
-    if "?" in qr_data.data:
-        url_with_id = f"{qr_data.data}&qr_id={qr_id}"
+    qr_id = qr_data.qr_id if qr_data.qr_id else str(uuid.uuid4())
+    
+    # Use the user's original URL
+    url = qr_data.url
+
+    # Append the user-supplied qr_id to the URL
+    if "?" in url:
+        url_with_id = f"{url}&qr_id={qr_id}"
     else:
-        url_with_id = f"{qr_data.data}?qr_id={qr_id}"
-    # Generate QR code with the modified URL
+        url_with_id = f"{url}?qr_id={qr_id}"
+
     qr = qrcode.QRCode(
         version=qr_data.version,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -31,7 +35,7 @@ def create_qrcode(db: Session, qr_data: QRCodeCreate):
     img.save(buffer, format="PNG")
     img_bytes = buffer.getvalue()
 
-    db_qrcode = QRCode(qr_id=qr_id, data=qr_data.data, img_bytes=img_bytes)
+    db_qrcode = QRCode(qr_id=qr_id, url=qr_data.url, img_bytes=img_bytes)
     db.add(db_qrcode)
     db.commit()
     db.refresh(db_qrcode)
@@ -56,3 +60,6 @@ def save_metadata(db: Session, metadata: MetadataCreate):
     db.commit()
     db.refresh(db_metadata)
     return db_metadata
+
+def get_all_qrcodes(db: Session):
+    return db.query(QRCode).all()

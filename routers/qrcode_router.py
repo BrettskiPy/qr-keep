@@ -5,9 +5,12 @@ from io import BytesIO
 from starlette.responses import StreamingResponse
 
 from database import get_db
-from schemas.qrcode import QRCodeCreate, QRCodeResponse, QRCodeDataResponse
+from schemas.qrcode import QRCodeCreate, QRCodeResponse, QRCodeURLResponse
 from schemas.metadata import MetadataCreate, MetadataResponse
 from services.qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_metadata
+from schemas.qrcode import QRCodeBase
+from services.qrcode_service import get_all_qrcodes
+
 
 router = APIRouter()
 
@@ -42,7 +45,7 @@ async def download_qrcode_endpoint(qr_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="QR code not found")
 
 
-@router.get("/get_qrcode_data/{qr_id}", response_model=QRCodeDataResponse)
+@router.get("/get_qrcode_data/{qr_id}", response_model=QRCodeURLResponse)
 async def get_qrcode_data(qr_id: str, db: Session = Depends(get_db)):
     """
     Retrieve the original data used to generate the QR code.
@@ -94,3 +97,12 @@ async def get_metadata(qr_id: str, db: Session = Depends(get_db)):
     ]
 
     return metadata_list
+
+
+@router.get("/qrcodes/", response_model=List[QRCodeBase])
+async def get_all_qrcodes_endpoint(db: Session = Depends(get_db)):
+    """
+    Retrieve all QR codes along with their data.
+    """
+    db_qrcodes = get_all_qrcodes(db)
+    return db_qrcodes

@@ -8,7 +8,7 @@ class QRCode(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     qr_id = Column(String, unique=True, index=True, nullable=False)
-    data = Column(String, nullable=False)
+    url = Column(String, nullable=False)
     img_bytes = Column(LargeBinary, nullable=False)
 
     # Renamed relationship from 'metadata' to 'metadata_entries'
