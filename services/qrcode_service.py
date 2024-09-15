@@ -13,29 +13,29 @@ from schemas.scan_data import ScanDataCreate
 def create_qrcode(db: Session, qr_data: QRCodeCreate):
     qr_id = qr_data.qr_id if qr_data.qr_id else str(uuid.uuid4())
 
-    # Use the user's original URL
-    url = qr_data.url
-
-    # Append the user-supplied qr_id to the URL
-    if "?" in url:
-        url_with_id = f"{url}&qr_id={qr_id}"
-    else:
-        url_with_id = f"{url}?qr_id={qr_id}"
-
     qr = qrcode.QRCode(
         version=qr_data.version,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
         box_size=qr_data.box_size,
         border=qr_data.border,
     )
-    qr.add_data(url_with_id)
+    qr.add_data(qr_data.url)
     qr.make(fit=True)
     img = qr.make_image(fill_color=qr_data.fill_color, back_color=qr_data.back_color)
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     img_bytes = buffer.getvalue()
 
-    db_qrcode = QRCode(qr_id=qr_id, url=qr_data.url, img_bytes=img_bytes)
+    db_qrcode = QRCode(
+        qr_id=qr_id,
+        url=qr_data.url,
+        img_bytes=img_bytes,
+        version=qr_data.version,
+        box_size=qr_data.box_size,
+        border=qr_data.border,
+        fill_color=qr_data.fill_color,
+        back_color=qr_data.back_color,
+    )
     db.add(db_qrcode)
     db.commit()
     db.refresh(db_qrcode)

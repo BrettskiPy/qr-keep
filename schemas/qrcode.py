@@ -17,9 +17,14 @@ class QRCodeBase(BaseModel):
     id: int
     qr_id: str
     url: str
+    version: int
+    box_size: int
+    border: int
+    fill_color: str
+    back_color: str
 
     class Config:
-        from_attributes = True  # For Pydantic v2
+        from_attributes = True
 
 
 class QRCodeResponse(QRCodeBase):
@@ -30,5 +35,5 @@ class QRCodeListResponse(BaseModel):
     qrcodes: List[QRCodeBase]
 
 
-class QRCodeURLResponse(QRCodeBase):
-    url: str
+class QRCodeDataResponse(QRCodeBase):
+    pass

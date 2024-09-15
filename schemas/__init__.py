@@ -1,2 +1,2 @@
-from .qrcode import QRCodeCreate, QRCodeResponse, QRCodeURLResponse
+from .qrcode import QRCodeCreate, QRCodeResponse, QRCodeDataResponse
 from .scan_data import ScanDataCreate, ScanDataResponse

@@ -5,7 +5,7 @@ from io import BytesIO
 from starlette.responses import StreamingResponse
 
 from database import get_db
-from schemas.qrcode import QRCodeCreate, QRCodeResponse, QRCodeURLResponse
+from schemas.qrcode import QRCodeCreate, QRCodeResponse, QRCodeDataResponse
 from schemas.scan_data import ScanDataCreate, ScanDataResponse
 from services.qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_scan_data
 from schemas.qrcode import QRCodeBase
@@ -16,14 +16,12 @@ router = APIRouter()
 
 
 @router.post("/generate_qrcode/", response_model=QRCodeResponse)
-async def generate_qrcode_endpoint(
-    qr_data: QRCodeCreate, db: Session = Depends(get_db)
-):
+async def generate_qrcode(qr_data: QRCodeCreate, db: Session = Depends(get_db)):
     db_qrcode = create_qrcode(db, qr_data)
     return db_qrcode
 
 
-@router.get("/get_qrcode_image/{qr_id}")
+@router.get("/qrcode_image/{qr_id}")
 async def get_qrcode(qr_id: str, db: Session = Depends(get_db)):
     db_qrcode = get_qrcode_by_qr_id(db, qr_id)
     if db_qrcode:
@@ -33,7 +31,7 @@ async def get_qrcode(qr_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/download_qrcode_image/{qr_id}")
-async def download_qrcode_endpoint(qr_id: str, db: Session = Depends(get_db)):
+async def download_qrcode(qr_id: str, db: Session = Depends(get_db)):
     db_qrcode = get_qrcode_by_qr_id(db, qr_id)
     if db_qrcode:
         return StreamingResponse(
@@ -45,7 +43,7 @@ async def download_qrcode_endpoint(qr_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="QR code not found")
 
 
-@router.get("/get_qrcode_data/{qr_id}", response_model=QRCodeURLResponse)
+@router.get("/qrcode_data/{qr_id}", response_model=QRCodeDataResponse)
 async def get_qrcode_data(qr_id: str, db: Session = Depends(get_db)):
     """
     Retrieve the original data used to generate the QR code.
@@ -57,10 +55,10 @@ async def get_qrcode_data(qr_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="QR code not found")
 
 
-@router.post("/receive_metadata/", response_model=ScanDataResponse)
-async def receive_metadata(metadata: ScanDataCreate, db: Session = Depends(get_db)):
+@router.post("/receive_scan_data/", response_model=ScanDataResponse)
+async def receive_scan_data(metadata: ScanDataCreate, db: Session = Depends(get_db)):
     """
-    Endpoint for external sites to send metadata associated with a QR code scan.
+    Endpoint for external sites to send scan data associated with a QR code.
     """
     db_metadata = save_scan_data(db, metadata)
 
@@ -77,16 +75,16 @@ async def receive_metadata(metadata: ScanDataCreate, db: Session = Depends(get_d
     return response
 
 
-@router.get("/all_scan_data/{qr_id}", response_model=List[ScanDataResponse])
+@router.get("/scan_data/{qr_id}", response_model=List[ScanDataResponse])
 async def get_metadata(qr_id: str, db: Session = Depends(get_db)):
     """
-    Retrieve all metadata associated with a specific QR code.
+    Retrieve scan data associated with a specific QR code.
     """
     db_qrcode = get_qrcode_by_qr_id(db, qr_id)
     if not db_qrcode:
         raise HTTPException(status_code=404, detail="QR code not found")
 
-    all_scan_data = [
+    scan_data = [
         ScanDataResponse(
             id=scan.id,
             qr_id=qr_id,
@@ -96,13 +94,13 @@ async def get_metadata(qr_id: str, db: Session = Depends(get_db)):
         for scan in db_qrcode.scan_data
     ]
 
-    return all_scan_data
+    return scan_data
 
 
-@router.get("/qrcodes/", response_model=List[QRCodeBase])
-async def get_all_qrcodes_endpoint(db: Session = Depends(get_db)):
+@router.get("/all_qrcodes_data/", response_model=List[QRCodeBase])
+async def all_qrcodes_data(db: Session = Depends(get_db)):
     """
-    Retrieve all QR codes along with their data.
+    Retrieve all QR codes with data.
     """
     db_qrcodes = get_all_qrcodes(db)
     return db_qrcodes
