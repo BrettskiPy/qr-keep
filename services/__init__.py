@@ -1,1 +1,1 @@
-from .qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_metadata
+from .qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_scan_data

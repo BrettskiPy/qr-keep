@@ -1,2 +1,2 @@
 from .qrcode import QRCode
-from .metadata import Metadata
+from .scan_data import ScanData

@@ -6,8 +6,8 @@ from starlette.responses import StreamingResponse
 
 from database import get_db
 from schemas.qrcode import QRCodeCreate, QRCodeResponse, QRCodeURLResponse
-from schemas.metadata import MetadataCreate, MetadataResponse
-from services.qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_metadata
+from schemas.scan_data import ScanDataCreate, ScanDataResponse
+from services.qrcode_service import create_qrcode, get_qrcode_by_qr_id, save_scan_data
 from schemas.qrcode import QRCodeBase
 from services.qrcode_service import get_all_qrcodes
 
@@ -57,18 +57,18 @@ async def get_qrcode_data(qr_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="QR code not found")
 
 
-@router.post("/receive_metadata/", response_model=MetadataResponse)
-async def receive_metadata(metadata: MetadataCreate, db: Session = Depends(get_db)):
+@router.post("/receive_metadata/", response_model=ScanDataResponse)
+async def receive_metadata(metadata: ScanDataCreate, db: Session = Depends(get_db)):
     """
     Endpoint for external sites to send metadata associated with a QR code scan.
     """
-    db_metadata = save_metadata(db, metadata)
+    db_metadata = save_scan_data(db, metadata)
 
     # Ensure that the qr_code relationship is loaded
     db.refresh(db_metadata, attribute_names=["qr_code"])
 
     qr_id = db_metadata.qr_code.qr_id if db_metadata.qr_code else None
-    response = MetadataResponse(
+    response = ScanDataResponse(
         id=db_metadata.id,
         qr_id=qr_id,
         ip_address=db_metadata.ip_address,
@@ -77,7 +77,7 @@ async def receive_metadata(metadata: MetadataCreate, db: Session = Depends(get_d
     return response
 
 
-@router.get("/metadata/{qr_id}", response_model=List[MetadataResponse])
+@router.get("/all_scan_data/{qr_id}", response_model=List[ScanDataResponse])
 async def get_metadata(qr_id: str, db: Session = Depends(get_db)):
     """
     Retrieve all metadata associated with a specific QR code.
@@ -86,17 +86,17 @@ async def get_metadata(qr_id: str, db: Session = Depends(get_db)):
     if not db_qrcode:
         raise HTTPException(status_code=404, detail="QR code not found")
 
-    metadata_list = [
-        MetadataResponse(
-            id=metadata.id,
+    all_scan_data = [
+        ScanDataResponse(
+            id=scan.id,
             qr_id=qr_id,
-            ip_address=metadata.ip_address,
-            user_agent=metadata.user_agent,
+            ip_address=scan.ip_address,
+            user_agent=scan.user_agent,
         )
-        for metadata in db_qrcode.metadata_entries
+        for scan in db_qrcode.scan_data
     ]
 
-    return metadata_list
+    return all_scan_data
 
 
 @router.get("/qrcodes/", response_model=List[QRCodeBase])

@@ -11,7 +11,6 @@ class QRCode(Base):
     url = Column(String, nullable=False)
     img_bytes = Column(LargeBinary, nullable=False)
 
-    # Renamed relationship from 'metadata' to 'metadata_entries'
-    metadata_entries = relationship(
-        "Metadata", back_populates="qr_code", cascade="all, delete-orphan"
+    scan_data = relationship(
+        "ScanData", back_populates="qr_code", cascade="all, delete-orphan"
     )

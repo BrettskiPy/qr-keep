@@ -5,14 +5,14 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from models.qrcode import QRCode
-from models.metadata import Metadata
+from models.scan_data import ScanData
 from schemas.qrcode import QRCodeCreate
-from schemas.metadata import MetadataCreate
+from schemas.scan_data import ScanDataCreate
 
 
 def create_qrcode(db: Session, qr_data: QRCodeCreate):
     qr_id = qr_data.qr_id if qr_data.qr_id else str(uuid.uuid4())
-    
+
     # Use the user's original URL
     url = qr_data.url
 
@@ -46,20 +46,21 @@ def get_qrcode_by_qr_id(db: Session, qr_id: str):
     return db.query(QRCode).filter(QRCode.qr_id == qr_id).first()
 
 
-def save_metadata(db: Session, metadata: MetadataCreate):
-    db_qrcode = get_qrcode_by_qr_id(db, metadata.qr_id)
+def save_scan_data(db: Session, scan_data: ScanDataCreate):
+    db_qrcode = get_qrcode_by_qr_id(db, scan_data.qr_id)
     if not db_qrcode:
         raise HTTPException(status_code=404, detail="QR code not found")
 
-    db_metadata = Metadata(
+    db_scan_data = ScanData(
         qr_code_id=db_qrcode.id,
-        ip_address=metadata.ip_address,
-        user_agent=metadata.user_agent,
+        ip_address=scan_data.ip_address,
+        user_agent=scan_data.user_agent,
     )
-    db.add(db_metadata)
+    db.add(db_scan_data)
     db.commit()
-    db.refresh(db_metadata)
-    return db_metadata
+    db.refresh(db_scan_data)
+    return db_scan_data
+
 
 def get_all_qrcodes(db: Session):
     return db.query(QRCode).all()

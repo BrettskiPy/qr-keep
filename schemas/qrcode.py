@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from typing import List
 
+
 class QRCodeCreate(BaseModel):
     url: str
     version: int = Field(default=1, ge=1, le=40)
@@ -24,8 +25,10 @@ class QRCodeBase(BaseModel):
 class QRCodeResponse(QRCodeBase):
     pass
 
+
 class QRCodeListResponse(BaseModel):
     qrcodes: List[QRCodeBase]
+
 
 class QRCodeURLResponse(QRCodeBase):
     url: str
