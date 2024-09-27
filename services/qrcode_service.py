@@ -2,7 +2,7 @@ import qrcode
 from io import BytesIO
 from sqlalchemy.orm import Session
 
-from models.qrcode import QRCode
+from models.qrcode_model import QRCode
 from schemas.qrcode import QRCodeCreate
 
 
@@ -22,6 +22,7 @@ def create_qrcode(db: Session, qr_data: QRCodeCreate):
 
     db_qrcode = QRCode(
         url=qr_data.url,
+        name=qr_data.name,
         img_bytes=img_bytes,
         version=qr_data.version,
         box_size=qr_data.box_size,
@@ -31,7 +32,6 @@ def create_qrcode(db: Session, qr_data: QRCodeCreate):
     )
     db.add(db_qrcode)
     db.commit()
-    db.refresh(db_qrcode)
     return db_qrcode
 
 

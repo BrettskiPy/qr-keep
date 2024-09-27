@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from database import get_db
-from schemas.scan_data import ScanDataCreate, ScanDataResponse
+from schemas.scan_data import ScanDataCreate, ScanDataResponse, Location
 from services.qrcode_service import get_qrcode_by_qr_id
 from services.scan_service import save_scan_data
 from models import ScanData
 
-router = APIRouter(prefix="/scan_data")
+
+router = APIRouter(prefix="/scan")
 
 
 @router.post("/{qr_id}", response_model=ScanDataResponse)
@@ -25,9 +26,11 @@ async def create_scan_data(
 
     response = ScanDataResponse(
         id=db_scan_data.id,
-        qr_id=db_scan_data.qr_id,
         ip_address=db_scan_data.ip_address,
         user_agent=db_scan_data.user_agent,
+        location=Location(
+            latitude=db_scan_data.latitude, longitude=db_scan_data.longitude
+        ),  # Make sure to pass location correctly
     )
     return response
 
@@ -47,6 +50,9 @@ async def get_scan_data_from_qrcode(qr_id: str, db: Session = Depends(get_db)):
             qr_id=qr_id,
             ip_address=scan.ip_address,
             user_agent=scan.user_agent,
+            location=Location(
+                latitude=scan.latitude, longitude=scan.longitude
+            ),  # Make sure to pass location correctly
         )
         for scan in db_qrcode.scan_data
     ]

@@ -4,6 +4,7 @@ from typing import List
 
 
 class QRCodeCreate(BaseModel):
+    name: str
     url: str
     version: int = Field(default=1, ge=1, le=40)
     box_size: int = Field(default=10, ge=1)
@@ -14,6 +15,7 @@ class QRCodeCreate(BaseModel):
 
 class QRCodeBase(BaseModel):
     id: int
+    name: str
     url: str
     version: int
     box_size: int

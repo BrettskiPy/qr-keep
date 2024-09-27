@@ -1,2 +1,2 @@
-from .qrcode import QRCode
-from .scan_data import ScanData
+from .qrcode_model import QRCode
+from .scan_model import ScanData
