@@ -10,12 +10,10 @@ class QRCodeCreate(BaseModel):
     border: int = Field(default=4, ge=0)
     fill_color: str = Field(default="black")
     back_color: str = Field(default="white")
-    qr_id: Optional[str] = Field(default=None)
 
 
 class QRCodeBase(BaseModel):
     id: int
-    qr_id: str
     url: str
     version: int
     box_size: int

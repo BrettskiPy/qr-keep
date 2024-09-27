@@ -7,7 +7,7 @@ class ScanData(Base):
     __tablename__ = "scan_data"
 
     id = Column(Integer, primary_key=True, index=True)
-    qr_code_id = Column(Integer, ForeignKey("qr_codes.id"), nullable=False)
+    qr_id = Column(Integer, ForeignKey("qr_codes.id"), nullable=False)
     ip_address = Column(String)
     user_agent = Column(String)
 

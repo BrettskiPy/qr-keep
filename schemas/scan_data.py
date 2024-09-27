@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class ScanDataCreate(BaseModel):
-    qr_id: str
     ip_address: str
     user_agent: str
 

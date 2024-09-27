@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import engine, Base
-from routers import qrcode_router
+from routers import qrcode_router, scan_router
 
 app = FastAPI()
 
@@ -8,4 +8,5 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 # Include routers
-app.include_router(qrcode_router.router)
+app.include_router(qrcode_router.router, tags=["QR Code"])
+app.include_router(scan_router.router, tags=["Scan Data"])

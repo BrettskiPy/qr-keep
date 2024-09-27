@@ -1,0 +1,82 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+
+from database import get_db
+from schemas.scan_data import ScanDataCreate, ScanDataResponse
+from services.qrcode_service import get_qrcode_by_qr_id
+from services.scan_service import save_scan_data
+from models import ScanData
+
+router = APIRouter(prefix="/scan_data")
+
+
+@router.post("/{qr_id}", response_model=ScanDataResponse)
+async def create_scan_data(
+    qr_id: str, scan_data: ScanDataCreate, db: Session = Depends(get_db)
+):
+    """
+    Create scan data for a QR code.
+    """
+    db_scan_data = save_scan_data(db, scan_data, qr_id)
+
+    # Ensure that the qr_code relationship is loaded
+    db.refresh(db_scan_data, attribute_names=["qr_code"])
+
+    response = ScanDataResponse(
+        id=db_scan_data.id,
+        qr_id=db_scan_data.qr_id,
+        ip_address=db_scan_data.ip_address,
+        user_agent=db_scan_data.user_agent,
+    )
+    return response
+
+
+@router.get("/{qr_id}", response_model=List[ScanDataResponse])
+async def get_scan_data_from_qrcode(qr_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve scan data associated with a specific QR code.
+    """
+    db_qrcode = get_qrcode_by_qr_id(db, qr_id)
+    if not db_qrcode:
+        raise HTTPException(status_code=404, detail="QR code not found")
+
+    scan_data = [
+        ScanDataResponse(
+            id=scan.id,
+            qr_id=qr_id,
+            ip_address=scan.ip_address,
+            user_agent=scan.user_agent,
+        )
+        for scan in db_qrcode.scan_data
+    ]
+
+    return scan_data
+
+
+@router.delete("/{qr_id}")
+async def delete_all_scanned_data_from_qrcode(
+    qr_id: str, db: Session = Depends(get_db)
+):
+    """
+    Delete all scanned data from a QR code.
+    """
+    db_qrcode = get_qrcode_by_qr_id(db, qr_id)
+    if not db_qrcode:
+        raise HTTPException(status_code=404, detail="QR code not found")
+
+    deleted_rows = (
+        db.query(ScanData)
+        .filter(ScanData.qr_id == qr_id)
+        .delete(synchronize_session=False)
+    )
+    db.commit()
+
+    if deleted_rows == 0:
+        raise HTTPException(
+            status_code=404, detail=f"No scan data found for the QR code id: {qr_id}"
+        )
+
+    return {
+        "message": f"Successfully deleted {deleted_rows} scan data entries for the QR code id: {qr_id}"
+    }
