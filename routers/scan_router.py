@@ -6,7 +6,7 @@ from database import get_db
 from schemas.scan_data import ScanDataCreate, ScanDataResponse, Location
 from services.qrcode_service import get_qrcode_by_qr_id
 from services.scan_service import save_scan_data
-from models import ScanData
+from models import ScanData, TimeBoundParams
 
 
 router = APIRouter(prefix="/scan")
@@ -30,7 +30,8 @@ async def create_scan_data(
         user_agent=db_scan_data.user_agent,
         location=Location(
             latitude=db_scan_data.latitude, longitude=db_scan_data.longitude
-        ),  # Make sure to pass location correctly
+        ),
+        timestamp=db_scan_data.timestamp,
     )
     return response
 
@@ -50,14 +51,46 @@ async def get_scan_data_from_qrcode(qr_id: str, db: Session = Depends(get_db)):
             qr_id=qr_id,
             ip_address=scan.ip_address,
             user_agent=scan.user_agent,
-            location=Location(
-                latitude=scan.latitude, longitude=scan.longitude
-            ),  # Make sure to pass location correctly
+            location=Location(latitude=scan.latitude, longitude=scan.longitude),
+            timestamp=scan.timestamp,
         )
         for scan in db_qrcode.scan_data
     ]
 
     return scan_data
+
+
+@router.get("/count/{qr_id}")
+async def scan_count_in_timeframe(
+    qr_id: str, db: Session = Depends(get_db), time_params: TimeBoundParams = Depends()
+):
+    """
+    Checks QR Code scan count within an optional timeframe.
+    """
+    # Fetch the QR code by ID
+    db_qrcode = get_qrcode_by_qr_id(db, qr_id)
+    if not db_qrcode:
+        raise HTTPException(status_code=404, detail="QR code not found")
+
+    # Get scan data and filter by optional timeframe
+    scan_data_query = db.query(ScanData).filter(ScanData.qr_id == db_qrcode.id)
+
+    if time_params.start_time:
+        scan_data_query = scan_data_query.filter(
+            ScanData.timestamp >= time_params.start_time
+        )
+    if time_params.end_time:
+        scan_data_query = scan_data_query.filter(
+            ScanData.timestamp <= time_params.end_time
+        )
+
+    # Get the count of scans directly
+    scan_count = scan_data_query.count()
+
+    # Return the count and whether any scans were found (boolean)
+    return {
+        "scan_count": scan_count,
+    }
 
 
 @router.delete("/{qr_id}")

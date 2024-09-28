@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class Location(BaseModel):
@@ -21,6 +22,7 @@ class ScanDataResponse(BaseModel):
     location: Location = Field(
         ..., description="Location data with latitude and longitude"
     )
+    timestamp: datetime
 
     class Config:
         from_attributes = True
