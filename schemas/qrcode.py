@@ -1,5 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
+from datetime import datetime
+
+
+class TimeBoundParams(BaseModel):
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+
+
+class Location(BaseModel):
+    latitude: float = Field(..., description="Latitude of the location")
+    longitude: float = Field(..., description="Longitude of the location")
 
 
 class QRCodeCreate(BaseModel):
@@ -10,6 +21,9 @@ class QRCodeCreate(BaseModel):
     border: int = Field(default=4, ge=0)
     fill_color: str = Field(default="black")
     back_color: str = Field(default="white")
+    location: Location = Field(
+        ..., description="Location data with latitude and longitude"
+    )
 
 
 class QRCodeBase(BaseModel):
@@ -21,6 +35,9 @@ class QRCodeBase(BaseModel):
     border: int
     fill_color: str
     back_color: str
+    location: Location = Field(
+        ..., description="Location data with latitude and longitude"
+    )
 
     class Config:
         from_attributes = True

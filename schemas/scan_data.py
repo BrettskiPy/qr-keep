@@ -22,7 +22,7 @@ class ScanDataResponse(BaseModel):
     location: Location = Field(
         ..., description="Location data with latitude and longitude"
     )
-    timestamp: datetime
+    created: datetime
 
     class Config:
         from_attributes = True

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, LargeBinary
+from sqlalchemy import Column, Integer, String, LargeBinary, Float
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -15,6 +15,8 @@ class QRCode(Base):
     border: int = Column(Integer, nullable=False)
     fill_color: str = Column(String, nullable=False)
     back_color: str = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
 
     scan_data = relationship(
         "ScanData", back_populates="qr_code", cascade="all, delete-orphan"

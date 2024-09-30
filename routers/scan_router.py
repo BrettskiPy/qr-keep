@@ -4,9 +4,10 @@ from typing import List
 
 from database import get_db
 from schemas.scan_data import ScanDataCreate, ScanDataResponse, Location
+from schemas.qrcode import TimeBoundParams
 from services.qrcode_service import get_qrcode_by_qr_id
 from services.scan_service import save_scan_data
-from models import ScanData, TimeBoundParams
+from models import ScanData
 
 
 router = APIRouter(prefix="/scan")
@@ -31,7 +32,7 @@ async def create_scan_data(
         location=Location(
             latitude=db_scan_data.latitude, longitude=db_scan_data.longitude
         ),
-        timestamp=db_scan_data.timestamp,
+        created=db_scan_data.created,
     )
     return response
 
@@ -52,7 +53,7 @@ async def get_scan_data_from_qrcode(qr_id: str, db: Session = Depends(get_db)):
             ip_address=scan.ip_address,
             user_agent=scan.user_agent,
             location=Location(latitude=scan.latitude, longitude=scan.longitude),
-            timestamp=scan.timestamp,
+            created=scan.created,
         )
         for scan in db_qrcode.scan_data
     ]
@@ -77,11 +78,11 @@ async def scan_count_in_timeframe(
 
     if time_params.start_time:
         scan_data_query = scan_data_query.filter(
-            ScanData.timestamp >= time_params.start_time
+            ScanData.created >= time_params.start_time
         )
     if time_params.end_time:
         scan_data_query = scan_data_query.filter(
-            ScanData.timestamp <= time_params.end_time
+            ScanData.created <= time_params.end_time
         )
 
     # Get the count of scans directly

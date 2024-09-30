@@ -13,7 +13,7 @@ from models.map_model import TimeBoundParams
 from fastapi import APIRouter, Depends
 
 
-router = APIRouter(prefix="/scan_map")
+router = APIRouter(prefix="/map")
 
 
 @router.get("/pin/{qr_id}")
@@ -23,8 +23,8 @@ async def generate_scan_pin_map(
     """
     Creates a pin map of scanned QR codes.
     """
-    location_data = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_pin_map(location_data=location_data, qr_id=qr_id)
+    scan_locations = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
+    map_file = generate_pin_map(scans=scan_locations)
     return generate_map_response(map_file, qr_id)
 
 
@@ -36,7 +36,7 @@ async def generate_scan_heat_map(
     Creates a heat map of scanned QR codes.
     """
     location_data = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_heat_map(location_data=location_data, qr_id=qr_id)
+    map_file = generate_heat_map(scans=location_data)
     return generate_map_response(map_file, qr_id)
 
 
@@ -48,5 +48,5 @@ async def generate_scan_cluster_map(
     Creates a cluster map of scanned QR codes.
     """
     location_data = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_cluster_map(location_data=location_data, qr_id=qr_id)
+    map_file = generate_cluster_map(scans=location_data)
     return generate_map_response(map_file, qr_id)

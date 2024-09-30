@@ -10,4 +10,4 @@ Base.metadata.create_all(bind=engine)
 # Include routers
 app.include_router(qrcode_router.router, tags=["QR Code"])
 app.include_router(scan_router.router, tags=["Scan"])
-app.include_router(scan_map_router.router, tags=["Scan Map"])
+app.include_router(scan_map_router.router, tags=["Map"])
