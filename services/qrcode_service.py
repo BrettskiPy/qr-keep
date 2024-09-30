@@ -35,7 +35,7 @@ def create_qrcode(db: Session, qr_data: QRCodeCreate):
     db.add(db_qrcode)
     db.commit()
     db.refresh(db_qrcode)
-    
+
     return QRCodeResponse(
         id=db_qrcode.id,
         name=db_qrcode.name,
@@ -45,9 +45,7 @@ def create_qrcode(db: Session, qr_data: QRCodeCreate):
         border=db_qrcode.border,
         fill_color=db_qrcode.fill_color,
         back_color=db_qrcode.back_color,
-        location=Location(
-            latitude=db_qrcode.latitude, longitude=db_qrcode.longitude
-        )
+        location=Location(latitude=db_qrcode.latitude, longitude=db_qrcode.longitude),
     )
 
 

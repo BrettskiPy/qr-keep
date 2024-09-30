@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends
 from database import get_db
 from services.map_service import (
-    generate_pin_map,
-    generate_heat_map,
-    generate_cluster_map,
-    fetch_location_data,
+    create_pin_map,
+    fetch_scan_location_data,
+    fetch_qrcode_location_data,
     generate_map_response,
 )
 
@@ -17,36 +16,17 @@ router = APIRouter(prefix="/map")
 
 
 @router.get("/pin/{qr_id}")
-async def generate_scan_pin_map(
+async def generate_pin_map(
     qr_id: int, time_params: TimeBoundParams = Depends(), db: Session = Depends(get_db)
 ):
     """
     Creates a pin map of scanned QR codes.
     """
-    scan_locations = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_pin_map(scans=scan_locations)
-    return generate_map_response(map_file, qr_id)
-
-
-@router.get("/heat/{qr_id}")
-async def generate_scan_heat_map(
-    qr_id: int, time_params: TimeBoundParams = Depends(), db: Session = Depends(get_db)
-):
-    """
-    Creates a heat map of scanned QR codes.
-    """
-    location_data = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_heat_map(scans=location_data)
-    return generate_map_response(map_file, qr_id)
-
-
-@router.get("/cluster/{qr_id}")
-async def generate_scan_cluster_map(
-    qr_id: int, time_params: TimeBoundParams = Depends(), db: Session = Depends(get_db)
-):
-    """
-    Creates a cluster map of scanned QR codes.
-    """
-    location_data = fetch_location_data(db=db, qr_id=qr_id, time_params=time_params)
-    map_file = generate_cluster_map(scans=location_data)
+    qrcode_locations = fetch_qrcode_location_data(
+        db=db, qr_id=qr_id, time_params=time_params
+    )
+    scan_locations = fetch_scan_location_data(
+        db=db, qr_id=qr_id, time_params=time_params
+    )
+    map_file = create_pin_map(qrcodes=qrcode_locations, scans=scan_locations)
     return generate_map_response(map_file, qr_id)
