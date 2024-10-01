@@ -6,7 +6,7 @@ from models.qrcode_model import QRCode
 from folium.plugins import MarkerCluster
 from typing import Optional
 from datetime import datetime
-from models.map_model import TimeBoundParams
+from schemas.common import TimeBoundParams
 from fastapi.responses import StreamingResponse
 import base64
 from io import BytesIO
@@ -53,9 +53,9 @@ def get_scan_map_data_by_qrcode(
     query = db.query(ScanData).filter(ScanData.qr_id == qr_id)
 
     if start_time:
-        query = query.filter(ScanData.timestamp >= start_time)
+        query = query.filter(ScanData.created >= start_time)
     if end_time:
-        query = query.filter(ScanData.timestamp <= end_time)
+        query = query.filter(ScanData.created <= end_time)
 
     return query.all()
 
@@ -69,9 +69,9 @@ def get_qrcode_map_data_by_qrcode(
     query = db.query(QRCode).filter(QRCode.id == qr_id)
 
     if start_time:
-        query = query.filter(ScanData.timestamp >= start_time)
+        query = query.filter(ScanData.created >= start_time)
     if end_time:
-        query = query.filter(ScanData.timestamp <= end_time)
+        query = query.filter(ScanData.created <= end_time)
 
     return query.all()
 

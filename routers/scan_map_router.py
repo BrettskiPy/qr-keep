@@ -8,7 +8,7 @@ from services.map_service import (
 )
 
 from sqlalchemy.orm import Session
-from models.map_model import TimeBoundParams
+from schemas.common import TimeBoundParams
 from fastapi import APIRouter, Depends
 
 

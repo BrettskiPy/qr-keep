@@ -1,10 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-
-
-class Location(BaseModel):
-    latitude: float = Field(..., description="Latitude of the location")
-    longitude: float = Field(..., description="Longitude of the location")
+from schemas.common import Location
 
 
 class ScanDataCreate(BaseModel):

@@ -4,7 +4,7 @@ from typing import List
 
 from database import get_db
 from schemas.scan_data import ScanDataCreate, ScanDataResponse, Location
-from schemas.qrcode import TimeBoundParams
+from schemas.common import Location, TimeBoundParams
 from services.qrcode_service import get_qrcode_by_qr_id
 from services.scan_service import save_scan_data
 from models import ScanData
